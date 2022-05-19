@@ -5,10 +5,9 @@
 
   - [Introduction](#Introduction)
   - [Getting Started](#getting-started)
-  - [Data Format](#Data Format)
-  - [Configuration Preparation](#Configuration Preparation)
+  - [Data Format](#Data-Format)
+  - [Configuration Preparation](#Configuration-Preparation)
   - [Performance](#Performance)
-  - [Add Handcrafted Features](#Add Handcrafted Features)
   - [Add Handcrafted Features](#Add-Handcrafted-Features)
 - [Speed](#Speed)
 - [N best Decoding](#N-best-Decoding)
@@ -164,7 +163,7 @@ Feature without pretrained embedding will be randomly initialized.
 
 **YATO** is implemented using fully batched calculation, making it quite effcient on both model training and decoding. With the help of GPU (Nvidia GTX 1080) and large batch size, LSTMCRF model built with **YATO** can reach 1000 sents/s and 2000sents/s on training and decoding status, respectively.
 
-![alt text](D:\YATO\orginal\NCRFpp-dev\readme\speed.png "System speed on NER data")
+![alt text](./readme/speed.png "System speed on NER data")
 
 
 ## N best Decoding
@@ -173,7 +172,7 @@ Traditional CRF structure decodes only one label sequence with largest probaboli
 
 In our implementation, when the nbest=10, CharCNN+WordLSTM+CRF model built in **YATO** can give 97.47% oracle F1-value (F1 = 91.35% when nbest=1) on CoNLL 2003 NER task.
 
-![alt text](D:\YATO\orginal\NCRFpp-dev\readme\nbest.png  "N best decoding oracle result")
+![alt text](./readme/nbest.png  "N best decoding oracle result")
 
 
 ## Reproduce Paper Results and Hyperparameter Tuning
