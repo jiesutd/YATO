@@ -12,6 +12,7 @@ import numpy as np
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from .wordrep import WordRep
 from .ncrf_transformers import NCRFTransformers
+from .classificationhead import ClassificationHead
 import sys
 
 
@@ -40,6 +41,7 @@ class WordSequence(nn.Module):
         self.customModel = data.customModel
         self.customCofig = data.customCofig
         self.device = data.device
+        self.classification_head = data.classification_head
         if self.use_word_seq:
             if not data.silence:
                 print("build word sequence feature extractor: %s..." % (data.word_feature_extractor))
@@ -134,6 +136,7 @@ class WordSequence(nn.Module):
                 self.device)
         else:
             self.hidden2tag = nn.Linear(self.output_hidden_dim, data.label_alphabet_size).to(self.device)
+
 
     def random_embedding(self, vocab_size, embedding_dim):
         """
@@ -231,8 +234,8 @@ class WordSequence(nn.Module):
         :param input:
         :return:
         """
-        word_inputs, feature_inputs, word_seq_lengths, char_inputs, char_seq_lengths, char_seq_recover, batch_word_text, batch_label, mask = input[
-                                                                                                                                             :9]
+        word_inputs, feature_inputs, word_seq_lengths, char_inputs, char_seq_lengths, char_seq_recover, batch_word_text, batch_label, mask = input[:9]
+
 
         """
             input:
@@ -289,5 +292,8 @@ class WordSequence(nn.Module):
         ## outputs: (batch_size, label_alphabet_size)
         if self.words2sent == "ATTENTION" or self.words2sent == "ATT":
             return outputs, norm_weights.squeeze(2)
+        elif self.classification_head:
+            return transformer_sequence_vector, None
         else:
             return outputs, None
+        

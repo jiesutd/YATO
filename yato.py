@@ -1,14 +1,15 @@
+# -*- coding: utf-8 -*
 from main import *
 import re
 from seqeval.metrics import accuracy_score, classification_report
 
-
 class YATO:
     def __init__(self, config):
-
+        self.set_seed()
         self.config = config
         self.data = Data()
         self.data.read_config(self.config)
+        
 
     def set_config_from_dset(self, dset):
         self.data.load(dset)
@@ -44,13 +45,10 @@ class YATO:
                 "nbest_predict_score": pred_scores, 'label': self.data.label_alphabet}
 
     def predict(self, input_text=None, predict_file=None, write_decode_file=True):
-
         self.data.read_config(self.config)
         dset = self.data.dset_dir
         self.set_config_from_dset(dset)
         self.data.read_config(self.config)
-        print("MODEL: Predict")
-        print("nbest: {}".format(self.data.nbest))
         if predict_file is not None and input_text is None:
             input_text = open(predict_file, 'r', encoding="utf8").readlines()
         elif predict_file is not None and input_text is not None:
@@ -61,8 +59,32 @@ class YATO:
         if write_decode_file and self.data.nbest > 0 and not self.data.sentence_classification:
             self.data.write_nbest_decoded_results(pred_results, pred_scores, 'predict')
         elif write_decode_file:
-            self.data.write_decoded_results(pred_scores, 'predict')
+            self.data.write_decoded_results(pred_results, 'predict')
         return speed, acc, p, r, f, pred_results, pred_scores
+    
+    def attention(self, input_text=None):
+        self.data.read_config(self.config)
+        dset = self.data.dset_dir
+        self.set_config_from_dset(dset)
+        self.data.read_config(self.config)
+        print("MODEL: Attention Weight")
+        self.data.generate_instance('predict', input_text)
+        probs_ls, weights_ls = extract_attention_weight(self.data)
+        return probs_ls, weights_ls
+
+    def set_seed(self, seed=42, hard = False):
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+        np.random.seed(seed)  # Numpy module.
+        random.seed(seed)  # Python random module.
+        torch.backends.cudnn.deterministic = True
+        if hard:
+            torch.backends.cudnn.enabled = False 
+            torch.backends.cudnn.benchmark = False
+            os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+            os.environ['PYTHONHASHSEED'] = str(seed)
+
 
     def convert_file_to_predict_style(self):
         predict_lines = open(self.data.raw_dir, 'r', encoding="utf8").readlines()

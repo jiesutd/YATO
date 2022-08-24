@@ -9,13 +9,14 @@
   - [Configuration Preparation](#Configuration-Preparation)
   - [Performance](#Performance)
   - [Add Handcrafted Features](#Add-Handcrafted-Features)
-- [Speed](#Speed)
-- [N best Decoding](#N-best-Decoding)
-- [Reproduce Paper Results and Hyperparameter Tuning](#Reproduce-Paper-Results-and-Hyperparameter-Tuning)
-- [Report Issue or Problem](#Report-Issue-or-Problem)
-- [Cite](#Cite)
-- [Future Plan](#Future-Plan)
-- [Update](#Update)
+  - [Speed](#Speed)
+  - [N best Decoding](#N-best-Decoding)
+  - [Text Attention Heatmap Visualization](#Text-Attention-Heatmap-Visualization)
+  - [Reproduce Paper Results and Hyperparameter Tuning](#Reproduce-Paper-Results-and-Hyperparameter-Tuning)
+  - [Report Issue or Problem](#Report-Issue-or-Problem)
+  - [Cite](#Cite)
+  - [Future Plan](#Future-Plan)
+  - [Update](#Update)
 
 # Introduction
 
@@ -126,20 +127,27 @@ sentence_classification=True/False
 
 ## Performance
 
-Results on CONLL 2003 English NER task are better or comparable with SOTA results with the same structures. 
+The results in multiple sequence labeling and sequence classification tasks are better or more comparable than SOTA results for the same structure.
 
-CharLSTM+WordLSTM+CRF: 91.20 vs 90.94 of [Lample .etc, NAACL16](http://www.aclweb.org/anthology/N/N16/N16-1030.pdf);
+By default, the `LSTM` is a bidirectional LSTM. The `BERT-base` is huggingface's bert-base-uncased. The `RoBERTa-base` is huggingface's roberta-base. The `ELECTRA-base` is huggingface's google/electra-base-discriminator.
 
-CharCNN+WordLSTM+CRF:  91.35 vs 91.21 of [Ma .etc, ACL16](http://www.aclweb.org/anthology/P/P16/P16-1101.pdf).   
+#### Results for sequence labeling tasks.
+| ID   | Model          | CoNLL2003 | OntoNotes 5.0 | MSRA  | Ontonotes 4.0 | CCG   |
+| ---- |----------------|-----------|---------------|-------|---------------|-------|
+| 1    | CCNN+WLSTM+CRF | 91.00     | 81.53         | 92.83 | 74.55         | 93.80 |
+| 2    | BERT-base      | 91.61     | 84.68         | 95.81 | 80.57         | 96.14 |
+| 3    | RoBERTa-base   | 90.23     | 86.28         | 96.02 | 80.94         | 96.16 |
+| 4    | ELECTRA-base   | 91.59     | 85.25         | 96.03 | 90.47         | 96.29 |
 
-By default, `LSTM` is bidirectional LSTM.    
+#### Results for sequence classification tasks.
+| ID   | Model      | SST2  | SST5  | ChnSentiCorp |
+| ---- |------------|-------|-------|--------------|
+| 1    | CCNN+WLSTM | 87.61 | 43.48 | 88.22        |
+| 2    | BERT-base  | 93.00 | 53.48 | 95.86        |
+| 3    | RoBERTa-base | 92.55 | 51.99 | 96.04        |
+| 4    | ELECTRA-base | 94.72 | 55.11 | 95.96        |
 
-| ID   | Model        | Nochar | CharLSTM  | CharCNN   |
-| ---- | ------------ | ------ | --------- | --------- |
-| 1    | WordLSTM     | 88.57  | 90.84     | 90.73     |
-| 2    | WordLSTM+CRF | 89.45  | **91.20** | **91.35** |
-| 3    | WordCNN      | 88.56  | 90.46     | 90.30     |
-| 4    | WordCNN+CRF  | 88.90  | 90.70     | 90.43     |
+For more details you can refer to our papers mentioned below.
 
 We have compared twelve neural sequence labeling models (`{charLSTM, charCNN, None} x {wordLSTM, wordCNN} x {softmax, CRF}`) on three benchmarks (POS, Chunking, NER) under statistical experiments, detail results and comparisons can be found in our COLING 2018 paper [Design Challenges and Misconceptions in Neural Sequence Labeling](https://arxiv.org/abs/1806.04470).
 
@@ -161,8 +169,7 @@ Feature without pretrained embedding will be randomly initialized.
 
 ## Speed
 
-**YATO** is implemented using fully batched calculation, making it quite effcient on both model training and decoding. With the help of GPU (Nvidia GTX 1080) and large batch size, LSTMCRF model built with **YATO** can reach 1000 sents/s and 2000sents/s on training and decoding status, respectively.
-
+**YATO** is implemented using a fully batch computing approach, making it quite efficient in both model training and decoding. With the help of GPU (Nvidia RTX 2080ti) and large batches, models built with **YATO** can be decoded quickly.
 ![alt text](./readme/speed.png "System speed on NER data")
 
 
@@ -170,10 +177,28 @@ Feature without pretrained embedding will be randomly initialized.
 
 Traditional CRF structure decodes only one label sequence with largest probabolities (i.e. 1-best output). While **YATO** can give a large choice, it can decode `n` label sequences with the top `n` probabilities (i.e. n-best output). The nbest decodeing has been supported by several popular **statistical** CRF framework. However to the best of our knowledge, **YATO** is the only and the first toolkit which support nbest decoding in **neural** CRF models. 
 
-In our implementation, when the nbest=10, CharCNN+WordLSTM+CRF model built in **YATO** can give 97.47% oracle F1-value (F1 = 91.35% when nbest=1) on CoNLL 2003 NER task.
+In our implementation, the model built in **YATO** can improve the F1-score by 6.6%-14.5% in the CoNLL 2003 NER task when nbest=10.
+![alt text](./readme/nbest.png  "N best decoding F1 result")
 
-![alt text](./readme/nbest.png  "N best decoding oracle result")
+## Text Attention Heatmap Visualization
 
+**YATO** takes the list of words and the corresponding weights as input and generates Latex code to visualize the attention-based text. the Latex code will generate a separate .pdf visualization file.
+
+![alt text](./readme/attention.png  "Visualization of attention map in Transformer-based model")
+
+You can use following code.
+```python
+from yato import YATO
+from utils import text_attention
+model = YATO(decode configuration file)
+
+sample = ["a fairly by-the-books blend of action and romance with sprinklings of intentional and unintentional comedy . ||| 1"]
+probsutils, weights_ls = model.attention(input_text=sample)
+sentece = "a fairly by-the-books blend of action and romance with sprinklings of intentional and unintentional comedy . "
+atten = weights_ls[0].tolist()
+
+text_attention.visualization(sentece, atten[0], tex = 'sample.tex', color='red')
+```
 
 ## Reproduce Paper Results and Hyperparameter Tuning
 

@@ -24,7 +24,7 @@ class Data:
     def __init__(self):
         self.sentence_classification = False
         self.words2sent_representation = "Attention"
-        self.MAX_SENTENCE_LENGTH = 1250
+        self.MAX_SENTENCE_LENGTH = 512
         self.MAX_WORD_LENGTH = -1
         self.number_normalized = False
         self.norm_word_emb = False
@@ -110,7 +110,7 @@ class Data:
         self.HP_iteration = 100
         self.HP_batch_size = 10
         self.HP_char_hidden_dim = 50
-        self.HP_hidden_dim = 512
+        self.HP_hidden_dim = 768
         self.HP_dropout = 0.5
         self.HP_lstm_layer = 1
         self.HP_bilstm = True
@@ -121,11 +121,14 @@ class Data:
         self.HP_clip = None
         self.HP_momentum = 0
         self.HP_l2 = 1e-8
-        self.scheduler = 'None'
-        self.warmup_step_rate = 0.1
+        self.scheduler = 'liner'
+        self.warmup_step_rate = 0.0
         self.customTokenizer = 'None'
         self.customModel = 'None'
         self.customCofig = 'None'
+        self.classification_head = False
+        self.classification_activation = 'tahn'
+        self.classifier_dropout = 0.1
 
     def initial_alphabets(self, input_list=None):
         if input_list == None:
@@ -156,7 +159,6 @@ class Data:
         print("++" * 50)
         if self.sentence_classification:
             print("Start Sentence Classification task...")
-
         else:
             print("Start   Sequence   Laebling   task...")
         print("++" * 50)
@@ -186,6 +188,7 @@ class Data:
         print("     Word  alphabet size: %s" % (self.word_alphabet_size))
         print("     Char  alphabet size: %s" % (self.char_alphabet_size))
         print("     Label alphabet size: %s" % (self.label_alphabet_size))
+        print("     Label alphabet content: %s" % (self.label_alphabet.get_content()))
 
         print("     FEATURE num: %s" % (self.feature_num))
         for idx in range(self.feature_num):
@@ -223,9 +226,11 @@ class Data:
             self.low_level_transformer, self.low_level_transformer_finetune))
         print("     Model high level transformer: %s; Finetune: %s" % (
             self.high_level_transformer, self.high_level_transformer_finetune))
-
         if self.sentence_classification:
             print("     Words hidden 2 sent: %s" % (self.words2sent_representation))
+        print("     Classification_Head: %s; Classification_Head Activation: %s" % (
+            self.classification_head, self.classification_activation))
+        print("     Classifier         dropout: %s" % (self.classifier_dropout))
 
         print(" " + "++" * 20)
         print(" Training:")
@@ -523,6 +528,8 @@ class Data:
             self.test_texts, self.test_Ids = instance_texts, instance_Ids
         elif name == "raw":
             self.raw_texts, self.raw_Ids = instance_texts, instance_Ids
+        elif name == 'predict':
+            self.predict_texts, self.predict_Ids = instance_texts, instance_Ids
         else:
             print("Error: you can only generate train/dev/test/raw instance! Illegal input:%s" % (name))
         return instance_Ids
@@ -538,8 +545,11 @@ class Data:
             content_list = self.dev_texts
         elif name == 'train':
             content_list = self.train_texts
+        elif name == 'predict':
+            content_list = self.predict_texts
         else:
             print("Error: illegal name during writing predict result, name should be within train/dev/test/raw !")
+        print('len(content_list)', len(content_list), sent_num)
         assert (sent_num == len(content_list))
         fout = open(self.decode_dir, 'w')
         for idx in range(sent_num):
@@ -787,13 +797,15 @@ class Data:
         the_item = 'dropout'
         if the_item in config:
             self.HP_dropout = float(config[the_item])
+        the_item = 'classifier_dropout'
+        if the_item in config:
+            self.classifier_dropout = float(config[the_item])
         the_item = 'lstm_layer'
         if the_item in config:
             self.HP_lstm_layer = int(config[the_item])
         the_item = 'bilstm'
         if the_item in config:
             self.HP_bilstm = str2bool(config[the_item])
-
         the_item = 'gpu'
         if the_item in config:
             self.HP_gpu = str2bool(config[the_item])
@@ -815,6 +827,12 @@ class Data:
         the_item = 'words2sent'
         if the_item in config:
             self.words2sent_representation = config[the_item]
+        the_item = 'classifier'
+        if the_item in config:
+            self.classification_head = str2bool(config[the_item])
+        the_item = 'classifier_activation'
+        if the_item in config:
+            self.classification_activation = config[the_item]
 
         ## no seg for sentence classification
         if self.sentence_classification:

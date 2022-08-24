@@ -52,7 +52,9 @@ class NCRFTransformers(nn.Module):
             for name, param in self.model.named_parameters():
                 if name.startswith('embeddings'):
                     param.requires_grad = False
-
+        print(" " + "++" * 20)
+        print(self.model.config)
+        print(" " + "++" * 20)
     def extract_features(self, input_batch_list, device):
         """
 

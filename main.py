@@ -20,20 +20,30 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 from transformers import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
+import logging
 
-#os.environ['MKL_THREADING_LAYER'] = 'GNU'
-#os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
-#os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
 
-seed_num = 42
-random.seed(seed_num)
-torch.manual_seed(seed_num)
-np.random.seed(seed_num)
+    
+os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
+def logger_config(logging_file):
+    logging_name = logging_file.replace('.log', '')
 
+    logger = logging.getLogger(logging_name)
+    logger.setLevel(level=logging.DEBUG)
+    handler = logging.FileHandler(logging_file, encoding='UTF-8')
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    console = logging.StreamHandler()
+    console.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    logger.addHandler(console)
+    return logger
 
 def data_initialization(data):
     """
@@ -424,8 +434,9 @@ def train(data, log, metric):
     :param metric:
     :return:
     """
-    print("Training model...")
-    logRecord = open(log, 'w', encoding='utf-8')
+
+    logger = logger_config(log)
+    logger.info("Training model...")
     save_data_name = data.dset_dir
     data.save(save_data_name)
     best_test = [{"acc": {"best test": 0, "best dev": 0, "epoch num": 0}},
@@ -441,7 +452,7 @@ def train(data, log, metric):
     else:
         model = SeqLabel(data)
     if data.optimizer.lower() == "sgd":
-        optimizer = optim.SGD(model.parameters(), lr=data.HP_lr, momentum=data.HP_momentum, weight_decay=data.HP_l2)
+        optimizer = optim.SGD(model.parameters(),lr=data.HP_lr, momentum=data.HP_momentum,weight_decay=data.HP_l2)
     elif data.optimizer.lower() == "adagrad":
         optimizer = optim.Adagrad(model.parameters(), lr=data.HP_lr, weight_decay=data.HP_l2)
     elif data.optimizer.lower() == "adadelta":
@@ -453,19 +464,22 @@ def train(data, log, metric):
     elif data.optimizer.lower() == "adamw":
         optimizer = optim.AdamW(model.parameters(), lr=data.HP_lr, weight_decay=data.HP_l2)
     else:
-        print("Optimizer illegal: %s" % (data.optimizer))
-    if data.scheduler.lower() == 'get_linear_schedule_with_warmup':
+        logger.error("Optimizer illegal: %s" % (data.optimizer))
+    if data.scheduler.lower() == 'linear':
         scheduler = get_linear_schedule_with_warmup(optimizer,
                                                     num_warmup_steps=int(total_steps * data.warmup_step_rate),
                                                     num_training_steps=total_steps)
-    elif data.scheduler.lower() == 'get_cosine_schedule_with_warmup':
+    elif data.scheduler.lower() == 'cosine':
         scheduler = get_cosine_schedule_with_warmup(optimizer,
                                                     num_warmup_steps=int(total_steps * data.warmup_step_rate),
                                                     num_training_steps=total_steps)
+    else:
+        scheduler = None
 
     for idx in range(data.HP_iteration):
         epoch_start = time.time()
         temp_start = epoch_start
+        logging.info("Epoch: %s/%s" % (idx, data.HP_iteration))
         print("Epoch: %s/%s" % (idx, data.HP_iteration))
         instance_count = 0
         sample_loss = 0
@@ -477,6 +491,7 @@ def train(data, log, metric):
         model.zero_grad()
         train_num = len(data.train_Ids)
         total_batch = train_num // batch_size + 1
+        logger.info("Current Learning Rate: %s " % (str(optimizer.state_dict()['param_groups'][0]['lr'])))
         for batch_id in range(total_batch):
             start = batch_id * batch_size
             end = (batch_id + 1) * batch_size
@@ -503,9 +518,7 @@ def train(data, log, metric):
                 temp_time = time.time()
                 temp_cost = temp_time - temp_start
                 temp_start = temp_time
-                print("     Instance: %s; Time: %.2fs; loss: %.4f; acc: %s/%s=%.4f" % (
-                    end, temp_cost, sample_loss, right_token, whole_token, (right_token + 0.) / whole_token))
-                logRecord.writelines("     Instance: %s; Time: %.2fs; loss: %.4f; acc: %s/%s=%.4f \n" % (
+                logger.info("     Instance: %s; Time: %.2fs; loss: %.4f; acc: %s/%s=%.4f" % (
                     end, temp_cost, sample_loss, right_token, whole_token, (right_token + 0.) / whole_token))
                 sys.stdout.flush()
                 sample_loss = 0
@@ -513,16 +526,17 @@ def train(data, log, metric):
                 temp_time = time.time()
                 temp_cost = temp_time - temp_start
                 temp_start = temp_time
-                print("     Instance: %s; Time: %.2fs; loss: %.4f;" % (
-                    end, temp_cost, sample_loss))
-                logRecord.writelines("     Instance: %s; Time: %.2fs; loss: %.4f; \n" % (
+                logger.info("     Instance: %s; Time: %.2fs; loss: %.4f;" % (
                     end, temp_cost, sample_loss))
                 sys.stdout.flush()
                 sample_loss = 0
             loss.backward()
+            if data.HP_clip is not None:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), data.HP_clip)
             optimizer.step()
-            if data.scheduler.lower() != 'None':
+            if scheduler != None:
                 scheduler.step()
+                
             model.zero_grad()
         epoch_finish = time.time()
         speed, acc, p, r, f, _, _ = evaluate(data, model, "dev")
@@ -531,18 +545,17 @@ def train(data, log, metric):
 
         if data.seg:
             current_score = [acc, f]
-            print("Dev: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f" % (
-                dev_cost, speed, acc, p, r, f))
-            logRecord.writelines("Dev: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f \n" % (
-                dev_cost, speed, acc, p, r, f))
+            logger.info("Dev: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f " % (
+                dev_cost, speed, acc, p, r, f))            
             sys.stdout.flush()
         else:
             current_score = [acc, f]
-            print("Dev: time: %.2fs speed: %.2fst/s; acc: %.4f; f: %.4f" % (dev_cost, speed, acc, f))
-            logRecord.writelines("Dev: time: %.2fs speed: %.2fst/s; acc: %.4f; f: %.4f \n"
-                                 % (dev_cost, speed, acc, f))
+            logger.info("Dev: time: %.2fs speed: %.2fst/s; acc: %.4f; f: %.4f " % (dev_cost, speed, acc, f))               
             sys.stdout.flush()
-        speed, acc, p, r, f, _, _ = evaluate(data, model, "test")
+            
+        
+        speed, acc, p, r, f,  _, _ = evaluate(data, model, "test")
+ 
         test_finish = time.time()
         test_cost = test_finish - dev_finish
         test_current = [acc, f]
@@ -554,34 +567,25 @@ def train(data, log, metric):
                 trecord["epoch num"] = idx
                 ex_model_name = data.model_dir + 'acc%.4f_p%.4f_r%.4f_f%.4f.pth' % (
                     acc, p, r, f)
-                print("Save current best " + mtag + " model in file:" + str(ex_model_name))
-                logRecord.writelines("Save current best " + mtag + " model in file:" + str(ex_model_name) + '\n')
+                logger.info("Save current best " + mtag + " model in file:" + str(ex_model_name))
                 if not os.path.exists(ex_model_name):
                     torch.save(model.state_dict(), ex_model_name)
         if data.seg:
-            print("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f" % (
-                test_cost, speed, acc, p, r, f))
-            logRecord.writelines("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f \n" % (
+            logger.info("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f " % (
                 test_cost, speed, acc, p, r, f))
             sys.stdout.flush()
         else:
-            print("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f" % (
-                test_cost, speed, acc, p, r, f))
-            logRecord.writelines("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f \n" % (
+            logger.info("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f " % (
                 test_cost, speed, acc, p, r, f))
             sys.stdout.flush()
     if metric.lower() == 'a':
         best_test_record = best_test[0].get("acc")
-        print('Best Test Accuracy: %s, Best Validation Accuracy: %s, Best Test Accuracy Epoch: %s' % (
-            str(best_test_record["best test"]), str(best_test_record["best dev"]), str(best_test_record["epoch num"])))
-        logRecord.writelines('Best Test Accuracy: %s, Best Validation Accuracy: %s, Best Test Accuracy Epoch: %s \n' % (
+        logger.info('Best Test Accuracy: %s, Best Validation Accuracy: %s, Best Test Accuracy Epoch: %s ' % (
             str(best_test_record["best test"]), str(best_test_record["best dev"]), str(best_test_record["epoch num"])))
         sys.stdout.flush()
     elif metric.lower() == 'f':
         best_test_record = best_test[1].get("f")
-        print('Best Test F1 Score: %s, Best Validation F1 Score: %s, Best Test F1 Score Epoch: %s' % (
-            str(best_test_record["best test"]), str(best_test_record["best dev"]), str(best_test_record["epoch num"])))
-        logRecord.writelines('Best Test F1 Score: %s, Best Validation F1 Score: %s, Best Test F1 Score Epoch: %s \n' % (
+        logger.info('Best Test F1 Score: %s, Best Validation F1 Score: %s, Best Test F1 Score Epoch: %s ' % (
             str(best_test_record["best test"]), str(best_test_record["best dev"]), str(best_test_record["epoch num"])))
         sys.stdout.flush()
 
@@ -615,56 +619,43 @@ def load_model_decode(data, name):
         print("%s: time:%.2fs, speed:%.2fst/s; acc: %.4f" % (name, time_cost, speed, acc))
     return speed, acc, p, r, f, pred_results, pred_scores
 
+def extract_attention_weight(data):
+    """
 
-def run_ncrfpp(config, log='test.log', metric='F', wordemb=None, charemb=None, savemodel=None,
-               savedset=None, train_path="data/conll03/train.bmes", dev_path="data/conll03/dev.bmes",
-               test_path="data/conll03/test.bmes", seg='True', loadmodel=None):
-    data = Data()
-    if config == 'None':
-        data.train_dir = train_path
-        data.dev_dir = dev_path
-        data.test_dir = test_path
-        data.model_dir = savemodel
-        data.load_model_dir = loadmodel
-        data.dset_dir = savedset
-        data.word_emb_dir = wordemb
-        data.char_emb_dir = charemb
-        if seg.lower() == 'true':
-            data.seg = True
-        else:
-            data.seg = False
-    status = data.status.lower()
-    print("Seed num:%s", str(seed_num))
-    if status == 'train':
-        print("MODEL: train")
-        data.read_config(config)
-        data_initialization(data)
-        data.generate_instance('train')
-        data.generate_instance('dev')
-        data.generate_instance('test')
-        data.build_pretrain_emb()
-        data.summary()
-        train(data, log, metric)
-
-    elif status == 'decode':
-        print("MODEL: decode")
-        data.load(data.dset_dir)
-        data.read_config(config)
-        data.generate_instance('raw')
-        print("nbest: %s" % (data.nbest))
-        decode_results, pred_scores = load_model_decode(data, 'raw')
-        if data.nbest > 0 and not data.sentence_classification:
-            data.write_nbest_decoded_results(decode_results, pred_scores, 'raw')
-        else:
-            data.write_decoded_results(decode_results, 'raw')
-    elif status == 'prob':
-        print("MODEL: decode")
-        data.load(data.dset_dir)
-        data.read_config(config)
-        print(str(data.raw_dir))
-        data.generate_instance('raw')
+    :param data:
+    :return:
+    """
+    if data.sentence_classification:
+        model = SentClassifier(data)
+    if data.HP_gpu == True or data.HP_gpu == 'True':
+        model.load_state_dict(torch.load(data.load_model_dir))
     else:
-        print("Invalid argument! Please use valid arguments! (train/test/decode)")
+        model.load_state_dict(torch.load(data.load_model_dir, map_location='cpu'))
+    instances = data.predict_Ids
+    model.eval()
+    batch_size = data.HP_batch_size
+    instance_num = len(instances)
+    total_batch = instance_num // batch_size + 1
+    probs_ls = []
+    weights_ls = []
+    for batch_id in tqdm(range(total_batch)):
+        start = batch_id * batch_size
+        end = (batch_id + 1) * batch_size
+        if end > instance_num:
+            end = instance_num
+        instance = instances[start:end]
+        if not instance:
+            continue
+        batch_word, batch_features, batch_wordlen, batch_wordrecover, batch_char, batch_charlen, batch_charrecover, batch_word_text, \
+        batch_label, mask = batchify_with_label(input_batch_list=instance, gpu=data.HP_gpu, device=data.device, if_train=True,\
+                                                sentence_classification=data.sentence_classification)
+        probs, weights = model.get_target_probability(batch_word, batch_features, batch_wordlen, batch_char, batch_charlen, \
+                                                      batch_charrecover,batch_word_text, None, mask)
+        probs_ls.append(probs)
+        weights_ls.append(weights)
+    return probs_ls, weights_ls
+
+
 
 
 if __name__ == '__main__':
