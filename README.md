@@ -24,7 +24,7 @@
 
 **YATO** is a PyTorch-based framework with flexible choices of input features and output structures.    The design of neural sequence models with **YATO** is fully configurable through a configuration file, which does not require any code work. 
 
-A predecessor version of the framework called ****YATO**** has been accepted as a demo paper by ACL 2018. The detailed experimental report and the analysis performed using ****YATO**** were accepted as the best paper by COLING 2018.
+A predecessor version of the framework called ****NCRF++**** has been accepted as a demo paper by ACL 2018. The detailed experimental report and the analysis performed using ****NCRF++**** were accepted as the best paper by COLING 2018.
 
   iooiWelcome to star this repository! 
 
