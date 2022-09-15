@@ -266,7 +266,7 @@ If you use experiment results and analysis of **NCRF++**, please cite our [COLIN
 
 ## Updates
 
-* 2022-May-14  YATO, init version
+* 2022-May-14  **YATO**, init version
 * 2020-Mar-06, dev version, sentence classification, framework change, model saved in one file.
 * 2018-Dec-17, **NCRF++** v0.2, support PyTorch 1.0
 * 2018-Mar-30, **NCRF++** v0.1, initial version
