@@ -191,7 +191,6 @@ The feature without pretrained embedding will be randomly initialized.
 
 With the help of GPU (Nvidia RTX 2080ti) and large batches, models built with **YATO** can be decoded efficiently.
 
-![alt text](./readme/speed.png "System speed on NER data")
 
 ## N best Decoding
 
