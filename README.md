@@ -32,12 +32,10 @@
 
 Its previous version called ****NCRF++**** has been accepted as a demo paper by ACL 2018. The in-depth experimental report based on ****NCRF++**** was accepted as the best paper by COLING 2018.
 
-<<<<<<< Updated upstream
 Welcome to star this repository!
-=======
-  iooiWelcome to star this repository! 
+
 ![alt text](./readme/YATO.png "YATO")
->>>>>>> Stashed changes
+
 
 ## Getting Started
 
@@ -95,53 +93,53 @@ You can specify the model, optimizer, and decoding through the configuration fil
 
 #### Dataloader
 
-train_dir=the path of the train file
-dev_dir=the path of the validation file
-test_dir=the path of the test file
-model_dir=the path to save model weights
-dset_dir=the path of configuration encode file
+train_dir=the path of the train file   
+dev_dir=the path of the validation file    
+test_dir=the path of the test file    
+model_dir=the path to save model weights       
+dset_dir=the path of configuration encode file         
 
 #### Model
 
-use_crf=True/False
-use_char=True/False
-char_seq_feature=GRU/LSTM/CNN/False
-use_word_seq=True/False
-use_word_emb=True/False
-word_emb_dir=The path of word embedding file
-word_seq_feature=GRU/LSTM/CNN/FeedFowrd/False
-low_level_transformer=pretrain language model from huggingface
-low_level_transformer_finetune=True/False
-high_level_transformer=pretrain language model from huggingface
-high_level_transformer_finetune=True/False
-cnn_layer=layer number
-char_hidden_dim=dimension number
-hidden_dim=dimension number
-lstm_layer=layer number
-bilstm=True/False
+use_crf=True/False        
+use_char=True/False            
+char_seq_feature=GRU/LSTM/CNN/False          
+use_word_seq=True/False          
+use_word_emb=True/False          
+word_emb_dir=The path of word embedding file          
+word_seq_feature=GRU/LSTM/CNN/FeedFowrd/False          
+low_level_transformer=pretrain language model from huggingface          
+low_level_transformer_finetune=True/False          
+high_level_transformer=pretrain language model from huggingface          
+high_level_transformer_finetune=True/False          
+cnn_layer=layer number          
+char_hidden_dim=dimension number          
+hidden_dim=dimension number          
+lstm_layer=layer number          
+bilstm=True/False          
 
 ### Hyperparameters
 
-sentence_classification=True/False
-status=train/decode
-dropout=Dropout Rate
-optimizer=SGD/Adagrad/adadelta/rmsprop/adam/adamw
-iteration=epoch number
-batch_size=batch size
-learning_rate=learning rate
-gpu=True/False
-device=cuda:0
-scheduler=get_linear_schedule_with_warmup/get_cosine_schedule_with_warmup
-warmup_step_rate=warmup steo rate
+sentence_classification=True/False          
+status=train/decode          
+dropout=Dropout Rate          
+optimizer=SGD/Adagrad/adadelta/rmsprop/adam/adamw          
+iteration=epoch number          
+batch_size=batch size          
+learning_rate=learning rate          
+gpu=True/False          
+device=cuda:0          
+scheduler=get_linear_schedule_with_warmup/get_cosine_schedule_with_warmup          
+warmup_step_rate=warmup steo rate          
 
 ### Decode Configuration
 
-status=decode
-raw_dir=The path of decode file
-nbest=0 (NER)/1 (sentence classification)
-decode_dir=The path of decode result file
-load_model_dir=The path of model weights
-sentence_classification=True/False
+status=decode          
+raw_dir=The path of decode file          
+nbest=0 (NER)/1 (sentence classification)          
+decode_dir=The path of decode result file          
+load_model_dir=The path of model weights          
+sentence_classification=True/False          
 
 ## Performance
 
