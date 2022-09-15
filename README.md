@@ -32,6 +32,8 @@
 
 Its previous version called ****NCRF++**** has been accepted as a demo paper by ACL 2018. The in-depth experimental report based on ****NCRF++**** was accepted as the best paper by COLING 2018.
 
+Compared with ****NCRF++****, the highlight of **YATO** is the support for Pre-trained Language Model and sentence classification tasks.
+
 Welcome to star this repository!
 
 ![alt text](./readme/YATO.png "YATO")
@@ -195,8 +197,6 @@ With the help of GPU (Nvidia RTX 2080ti) and large batches, models built with **
 
 The traditional CRF structure decodes only one label sequence with the largest probabilities (i.e. 1-best output). In contrast, **YATO** can decode `n` label sequences with the top `n` probabilities (i.e. n-best output). The nbest decoding has been supported by several popular **statistical** CRF frameworks. To the best of our knowledge, **YATO** is the only and the first toolkit which supports nbest decoding in **neural** CRF models.
 
-In our implementation, the model built in **YATO** can improve the F1-score by 5.7%-6.8% in the CoNLL 2003 NER task when nbest=10.
-![alt text](./readme/nbest.png  "N best decoding F1 result")
 
 ## Text Attention Heatmap Visualization
 
@@ -261,7 +261,6 @@ If you use experiment results and analysis of **NCRF++**, please cite our [COLIN
 
 ## Future Plan
 
-* Document classification (working)
 * Support API usage
 * Upload trained model on Word Segmentation / POS tagging / NER
 
@@ -269,8 +268,8 @@ If you use experiment results and analysis of **NCRF++**, please cite our [COLIN
 
 * 2022-May-14  YATO, init version
 * 2020-Mar-06, dev version, sentence classification, framework change, model saved in one file.
-* 2018-Dec-17, **YATO** v0.2, support PyTorch 1.0
-* 2018-Mar-30, **YATO** v0.1, initial version
+* 2018-Dec-17, **NCRF++** v0.2, support PyTorch 1.0
+* 2018-Mar-30, **NCRF++** v0.1, initial version
 * 2018-Jan-06, add result comparison.
 * 2018-Jan-02, support character feature selection.
 * 2017-Dec-06, init version
