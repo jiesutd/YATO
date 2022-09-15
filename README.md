@@ -195,13 +195,8 @@ With the help of GPU (Nvidia RTX 2080ti) and large batches, models built with **
 
 The traditional CRF structure decodes only one label sequence with the largest probabilities (i.e. 1-best output). In contrast, **YATO** can decode `n` label sequences with the top `n` probabilities (i.e. n-best output). The nbest decoding has been supported by several popular **statistical** CRF frameworks. To the best of our knowledge, **YATO** is the only and the first toolkit which supports nbest decoding in **neural** CRF models.
 
-<<<<<<< Updated upstream
-In our implementation, the model built in **YATO** can improve the F1-score by 6.6%-14.5% in the CoNLL 2003 NER task when nbest=10.
-![alt text](./readme/nbest.png "N best decoding F1 result")
-=======
 In our implementation, the model built in **YATO** can improve the F1-score by 5.7%-6.8% in the CoNLL 2003 NER task when nbest=10.
 ![alt text](./readme/nbest.png  "N best decoding F1 result")
->>>>>>> Stashed changes
 
 ## Text Attention Heatmap Visualization
 
