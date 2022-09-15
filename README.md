@@ -242,7 +242,7 @@ If you want to report an issue or ask a problem, please attach the following mat
 If you use **NCRF++** in your paper, please cite our [ACL demo paper](https://arxiv.org/abs/1806.05626):
 
     @inproceedings{yang2018ncrf,
-    title={**YATO**: An Open-source Neural Sequence Labeling Toolkit},
+    title={NCRF++: An Open-source Neural Sequence Labeling Toolkit},
     author={Yang, Jie and Zhang, Yue},
     booktitle={Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics},
      Url = {http://aclweb.org/anthology/P18-4013},
