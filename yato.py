@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*
 from main import *
+from utils import *
+from model import *
 import re
 from seqeval.metrics import accuracy_score, classification_report
 

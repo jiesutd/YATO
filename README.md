@@ -44,7 +44,7 @@ Welcome to star this repository!
 We provide an easy way to use the toolkit **YATO** from PyPI
 
 ```bash
-pip install yato
+pip install ylab-yato
 ```
 
 Or directly install it from the source  code
