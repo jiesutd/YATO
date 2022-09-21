@@ -26,7 +26,7 @@
 
 # Introduction
 
-**YATO**, an open-source Python library for text analysis. In particular, **YATO** focuses on sequence labeling and sequence classification tasks, including extensive fundamental NLP tasks such as part-of-speech tagging, chunking, NER, CCG super tagging, sentiment analysis, and sentence classification. **YATO** can design both specific RNN-based and Transformer-based through user-friendly configuration and integrating the SOTA pre-trained language models, such as BERT.
+**YATO**, an open-source Python library for text analysis. In particular, **YATO** focuses on sequence labeling and sequence classification tasks, including extensive fundamental NLP tasks such as part-of-speech tagging, chunking, NER, CCG supertagging, sentiment analysis, and sentence classification. **YATO** can design both specific RNN-based and Transformer-based through user-friendly configuration and integrating the SOTA pre-trained language models, such as BERT.
 
 **YATO** is a PyTorch-based framework with flexible choices of input features and output structures. The design of neural sequence models with **YATO** is fully configurable through a configuration file, which does not require any code work.
 
@@ -63,7 +63,7 @@ model.train()
 
 The code to decode prediction files:
 
-```
+```python
 from yato import YATO
 decode_model = YATO(configuration file)
 result_dict = decode_model.decode()
@@ -145,7 +145,7 @@ sentence_classification=True/False
 
 ## Performance
 
-For multiple sequence labeling and sequence classification tasks, YATO has reproduced or outperformed the reported SOTA results on majority datasets.
+For multiple sequence labeling and sequence classification tasks, **YATO** has reproduced or outperformed the reported SOTA results on majority datasets.
 
 By default, the `LSTM` is a bidirectional LSTM. The `BERT-base` is huggingface's bert-base-uncased. The `RoBERTa-base` is huggingface's roberta-base. The `ELECTRA-base` is huggingface's google/electra-base-discriminator.
 
@@ -169,14 +169,12 @@ By default, the `LSTM` is a bidirectional LSTM. The `BERT-base` is huggingface's
 
 For more details, you can refer to our papers mentioned below.
 
-We have compared twelve neural sequence labeling models (`{charLSTM, charCNN, None} x {wordLSTM, wordCNN} x {softmax, CRF}`) on three benchmarks (POS, Chunking, NER) under statistical experiments, detailed results and comparisons can be found in our COLING 2018 paper [Design Challenges and Misconceptions in Neural Sequence Labeling](https://arxiv.org/abs/1806.04470).
-
-The results based on Pretrain Language Model were recorded in [YATO: Yet Another deep learning based\ Text analysis Open toolkit]()
+The results based on Pretrain Language Model were recorded in [YATO: Yet Another deep learning based Text analysis Open toolkit]()
 
 ## Add Handcrafted Features
 
-**YATO** has integrated several SOTA neural character sequence feature extractors: CNN ([Ma .etc, ACL16](http://www.aclweb.org/anthology/P/P16/P16-1101.pdf)), LSTM ([Lample .etc, NAACL16](http://www.aclweb.org/anthology/N/N16/N16-1030.pdf)) and GRU ([Yang .etc, ICLR17](https://arxiv.org/pdf/1703.06345.pdf)). In addition, hand-crafted features have been proven to be important in sequence labeling tasks. **YATO** supports users designing their features such as Capitalization, POS tag, or any other features (grey circles in the above figure). Users can configure the self-defined features through a configuration file (feature embedding size, pretrained feature embeddings .etc). The sample of input format is given at [train.cappos.bmes](sample_data/train.cappos.bmes), which includes two hand-crafted features `[POS]` and `[Cap]`. (`[POS]` and `[Cap]` are two examples, you can set your feature any name you want, just follow the format `[xx]` and configure the feature with the same name in the configuration file.)
-Users can configure each feature in configuration file by using
+**YATO** has integrated several SOTA neural character sequence feature extractors: CNN ([Ma .etc, ACL16](http://www.aclweb.org/anthology/P/P16/P16-1101.pdf)), LSTM ([Lample .etc, NAACL16](http://www.aclweb.org/anthology/N/N16/N16-1030.pdf)) and GRU ([Yang .etc, ICLR17](https://arxiv.org/pdf/1703.06345.pdf)). In addition, hand-crafted features have been proven to be important in sequence labeling tasks. **YATO** supports users designing their features such as Capitalization, POS tag, or any other features (green circles in the above figure). Users can configure the self-defined features through a configuration file (feature embedding size, pretrained feature embeddings .etc). The sample of input format is given at [train.cappos.bmes](sample_data/train.cappos.bmes), which includes two hand-crafted features `[POS]` and `[Cap]`. (`[POS]` and `[Cap]` are two examples, you can set your feature any name you want, just follow the format `[xx]` and configure the feature with the same name in the configuration file.)
+Users can configure each feature in configuration file by using.
 
 ```Python
 feature=[POS] emb_size=20 emb_dir=%your_pretrained_POS_embedding
@@ -195,7 +193,7 @@ With the help of GPU (Nvidia RTX 2080ti) and large batches, models built with **
 
 ## N best Decoding
 
-The traditional CRF structure decodes only one label sequence with the largest probabilities (i.e. 1-best output). In contrast, **YATO** can decode `n` label sequences with the top `n` probabilities (i.e. n-best output). The nbest decoding has been supported by several popular **statistical** CRF frameworks. To the best of our knowledge, **YATO** is the only and the first toolkit which supports nbest decoding in **neural** CRF models.
+The traditional CRF structure decodes only one label sequence with the largest probabilities (i.e. 1-best output). In contrast, **YATO** can decode `n` label sequences with the top `n` probabilities (i.e. n-best output). The nbest decoding has been supported by several popular **statistical** CRF frameworks.
 
 
 ## Text Attention Heatmap Visualization
@@ -223,9 +221,9 @@ text_attention.visualization(sentece, atten[0], tex = 'sample.tex', color='red')
 
 ## Reproduce Paper Results and Hyperparameter Tuning
 
-To reproduce the results in our COLING 2018 paper, you only need to set the `iteration=1` as `iteration=100` in the configuration file `demo.train.config` and then configure your file directory.
+To reproduce the results of CoNLL2003 and SST2 in our paper, you only need to use the configuration file `bert_base_conll2003.config`, `bert_base_gelu_sst2.config` and then configure your file directory.
 
-The default configuration file adopts the `Char CNN + Word LSTM + CRF` model, and you can develop your model by modifying the configuration accordingly. The parameters in this demo configuration file are the same as our paper. (Notice the `Word CNN` related models need slightly adjust parameters, details can be found in our COLING paper.)
+The default configuration file adopts the `Pure PLM ` model, and you can develop your model by modifying the configuration accordingly. 
 
 If you want to use this framework in new tasks or datasets, here are some tuning [tips](readme/hyperparameter_tuning.md) by @Victor0118.
 
@@ -239,30 +237,19 @@ If you want to report an issue or ask a problem, please attach the following mat
 
 ## Cite
 
-If you use **NCRF++** in your paper, please cite our [ACL demo paper](https://arxiv.org/abs/1806.05626):
+If you use **YATO++** in your paper, please cite our [paper]():
 
-    @inproceedings{yang2018ncrf,
-    title={NCRF++: An Open-source Neural Sequence Labeling Toolkit},
-    author={Yang, Jie and Zhang, Yue},
-    booktitle={Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics},
-     Url = {http://aclweb.org/anthology/P18-4013},
-     year={2018}
+    @inproceedings{yang2022yato,
+    title={YATO: Yet Another deep learning based Text analysis Open toolkit},
+    author={Zeqiang, Wang and Yile, Wang and Jiageng, Wu and Zhiyang, Teng and Yang, Jie},
+    year={2022}
     }
 
-If you use experiment results and analysis of **NCRF++**, please cite our [COLING paper](https://arxiv.org/abs/1806.04470):
-
-    @inproceedings{yang2018design,
-    title={Design Challenges and Misconceptions in Neural Sequence Labeling},
-    author={Yang, Jie and Liang, Shuailong and Zhang, Yue},
-    booktitle={Proceedings of the 27th International Conference on Computational Linguistics (COLING)},
-     Url = {http://aclweb.org/anthology/C18-1327},
-     year={2018}
-    }
 
 ## Future Plan
 
 * Support API usage
-* Upload trained model on Word Segmentation / POS tagging / NER
+* Release trained model on various sequence labeling and classification tasks
 
 ## Updates
 
