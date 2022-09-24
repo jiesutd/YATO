@@ -752,7 +752,7 @@ class Data:
         the_item = 'customModel'
         if the_item in config:
             self.customModel = config[the_item]
-        the_item = 'customCofig'
+        the_item = 'customConfig'
         if the_item in config:
             self.customCofig = config[the_item]
         the_item = 'feature'
