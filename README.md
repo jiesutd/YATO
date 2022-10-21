@@ -241,7 +241,7 @@ If you use **YATO++** in your paper, please cite our [paper]():
 
     @inproceedings{yang2022yato,
     title={YATO: Yet Another deep learning based Text analysis Open toolkit},
-    author={Zeqiang, Wang and Yile, Wang and Jiageng, Wu and Zhiyang, Teng and Yang, Jie},
+    author={Wang, Zeqiang and Wang, Yile and Wu, Jiageng and Teng, Zhiyang and Yang, Jie},
     year={2022}
     }
 
