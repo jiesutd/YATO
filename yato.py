@@ -94,9 +94,7 @@ class YATO:
 
     def para2sent(self, para):
         """
-
         :param para:Dividing paragraphs into sentences
-        :return:
         """
         para = re.sub('([.。!！?？\?])([^”’])', r"\1\n\2", para)
         para = re.sub('(\.{6})([^”’])', r"\1\n\2", para)
@@ -107,9 +105,7 @@ class YATO:
 
     def sent2word(self, sentence):
         """
-
         :param sentence:Dividing sentences into words or chars
-        :return:
         """
         char_ls = list(sentence)
         word_ls = [char_ls[0]]
@@ -122,11 +118,9 @@ class YATO:
 
     def decode_raw(self, raw_text_path, task, out_text_path='raw.out'):
         """
-
         :param raw_text_path:The path of raw text file
         :param task:choose the task
         :param out_text_path:The path of decode result file
-        :return:
         """
         raw_text = open(raw_text_path, 'r', encoding='utf-8').read()
         out_text = open(out_text_path, 'w', encoding='utf-8')
@@ -146,11 +140,9 @@ class YATO:
 
     def get_gold_predict(self, golden_standard, predict_result, stoken):
         """
-
         :param golden_standard:golden standard file path
         :param predict_result:predict result file path
         :param stoken:split token
-        :return:
         """
         golden_data = open(golden_standard, 'r', encoding='utf-8').readlines()
         predict_data = open(predict_result, 'r', encoding='utf-8').readlines()
@@ -175,22 +167,18 @@ class YATO:
 
     def report_f1(self, golden_standard, predict_result, split=" "):
         """
-
         :param golden_standard:golden standard file path
         :param predict_result:predict result file path
         :param split:split token
-        :return:
         """
         golden_list, predict_list = self.get_gold_predict(golden_standard, predict_result, split)
         print(classification_report(golden_list, predict_list))
 
     def report_acc(self, golden_standard, predict_result, split=' ||| '):
         """
-
         :param golden_standard:golden standard file path
         :param predict_result:predict result file path
         :param split:split token
-        :return:
         """
         golden_list, predict_list = self.get_gold_predict(golden_standard, predict_result, split)
         print("Report accuracy: %0.2f" % accuracy_score(golden_list, predict_list))

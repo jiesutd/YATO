@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # @Author: Jie
 # @Date:   2017-06-14 17:34:32
 # @Last Modified by:   Jie Yang,     Contact: jieynlp@gmail.com
@@ -119,6 +118,7 @@ class Data:
         self.device = 'GPU'
         self.HP_lr = 0.015
         self.HP_clip = None
+        self.HP_lr_decay = 0
         self.HP_momentum = 0
         self.HP_l2 = 1e-8
         self.scheduler = 'liner'
@@ -244,6 +244,7 @@ class Data:
         print(" " + "++" * 20)
         print(" Hyperparameters:")
         print("     Hyper              lr: %s" % (self.HP_lr))
+        print("     Hyper        lr_decay: %s" % (self.HP_lr_decay))
         print("     Hyper         HP_clip: %s" % (self.HP_clip))
         print("     Hyper        momentum: %s" % (self.HP_momentum))
         print("     Hyper              l2: %s" % (self.HP_l2))
@@ -288,12 +289,12 @@ class Data:
                     self.norm_feature_embs[idx] = self.feat_config[self.feature_name[idx]]['emb_norm']
 
     def initial_feature_alphabets_from_list(self, one_feature_list):
-        ## one_feature_list: features of one instance. 
+        ## one_feature_list: features of one instance.
         # if sentence_classification:
         #   one_feature_list = [f1, f2, f3] for one sentence
         # else;
         #   one_feature_list = [[f1, f2, f3], [f1,f2,f3],...] for words within one sentence
-        # 
+        #
         if self.sentence_classification:
             items = one_feature_list
         else:
@@ -380,14 +381,14 @@ class Data:
 
     def build_alphabet_from_list(self, sent_list, label_list=None, feature_list=None):
 
-        ''' 
+        '''
         sent_list: list of list [[word1, word2,...],...,[wordx, wordy]...]
         label_list: if sentence_classification: list of labels [label1, label2,...labelx, labely,...]
                       else: list of list [[label1, label2,...],...,[labelx, labely,...]]
         feature_list: if sentence_classification: list of labels [[feat1, feat2,..],...,[feat1, feat2,..]], len(feature_list)= sentence_num
                       else: list of list [[[feat1, feat2,..],...,[feat1, feat2,..]],...,[[feat1, feat2,..],...,[feat1, feat2,..]]], , len(feature_list)= sentence_num
         '''
-        ## count word        
+        ## count word
         for sent in sent_list:
             for word in sent:
                 if self.number_normalized:
@@ -504,13 +505,13 @@ class Data:
         '''
         input_list: [sent_list, label_list, feature_list]
               sent_list: list of list [[word1, word2,...],...,[wordx, wordy]...]
-              label_list:     if sentence_classification: 
+              label_list:     if sentence_classification:
                                    list of labels [label1, label2,...labelx, labely,...]
-                              else: 
+                              else:
                                    list of list [[label1, label2,...],...,[labelx, labely,...]]
-              feature_list:   if sentence_classification: 
+              feature_list:   if sentence_classification:
                                    list of labels [[feat1, feat2,..],...,[feat1, feat2,..]], len(feature_list)= sentence_num
-                              else: 
+                              else:
                                    list of list [[[feat1, feat2,..],...,[feat1, feat2,..]],...,[[feat1, feat2,..],...,[feat1, feat2,..]]], , len(feature_list)= sentence_num
         '''
 
@@ -752,7 +753,7 @@ class Data:
         the_item = 'customModel'
         if the_item in config:
             self.customModel = config[the_item]
-        the_item = 'customConfig'
+        the_item = 'customCofig'
         if the_item in config:
             self.customCofig = config[the_item]
         the_item = 'feature'
@@ -815,6 +816,9 @@ class Data:
         the_item = 'learning_rate'
         if the_item in config:
             self.HP_lr = float(config[the_item])
+        the_item = 'lr_decay'
+        if the_item in config:
+            self.HP_lr_decay = float(config[the_item])
         the_item = 'clip'
         if the_item in config:
             self.HP_clip = float(config[the_item])

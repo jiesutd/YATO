@@ -27,9 +27,10 @@ try:
 except ImportError:
     import pickle
 
-    
 os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
+
+
 def logger_config(logging_file):
     logging_name = logging_file.replace('.log', '')
 
@@ -45,12 +46,8 @@ def logger_config(logging_file):
     logger.addHandler(console)
     return logger
 
-def data_initialization(data):
-    """
 
-    :param data:
-    :return:
-    """
+def data_initialization(data):
     data.initial_feature_alphabets()
     data.build_alphabet(data.train_dir)
     data.build_alphabet(data.dev_dir)
@@ -59,14 +56,6 @@ def data_initialization(data):
 
 
 def predict_check(pred_variable, gold_variable, mask_variable, sentence_classification=False):
-    """
-
-    :param pred_variable:
-    :param gold_variable:
-    :param mask_variable:
-    :param sentence_classification:
-    :return:
-    """
     """
         input:
             pred_variable (batch_size, sent_len): pred tag result, in numpy format
@@ -88,16 +77,6 @@ def predict_check(pred_variable, gold_variable, mask_variable, sentence_classifi
 
 def recover_label(pred_variable, gold_variable, mask_variable, label_alphabet, word_recover,
                   sentence_classification=False):
-    """
-
-    :param pred_variable:
-    :param gold_variable:
-    :param mask_variable:
-    :param label_alphabet:
-    :param word_recover:
-    :param sentence_classification:
-    :return:
-    """
     """
         input:
             pred_variable (batch_size, sent_len): pred tag result
@@ -132,14 +111,6 @@ def recover_label(pred_variable, gold_variable, mask_variable, label_alphabet, w
 
 def recover_nbest_label(pred_variable, mask_variable, label_alphabet, word_recover):
     """
-
-    :param pred_variable:
-    :param mask_variable:
-    :param label_alphabet:
-    :param word_recover:
-    :return:
-    """
-    """
         input:
             pred_variable (batch_size, sent_len, nbest): pred tag result
             mask_variable (batch_size, sent_len): mask variable
@@ -165,15 +136,15 @@ def recover_nbest_label(pred_variable, mask_variable, label_alphabet, word_recov
     return pred_label
 
 
-def evaluate(data, model, name, nbest=0):
-    """
+def lr_decay(optimizer, epoch, decay_rate, init_lr):
+    lr = init_lr / (1 + decay_rate * epoch)
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+    print(lr)
+    return optimizer
 
-    :param data:
-    :param model:
-    :param name:
-    :param nbest:
-    :return:
-    """
+
+def evaluate(data, model, name, nbest=0):
     if name == "train":
         instances = data.train_Ids
     elif name == "dev":
@@ -234,15 +205,6 @@ def evaluate(data, model, name, nbest=0):
 
 
 def batchify_with_label(input_batch_list, gpu, device, if_train=True, sentence_classification=False):
-    """
-
-    :param input_batch_list:
-    :param gpu:
-    :param device:
-    :param if_train:
-    :param sentence_classification:
-    :return:
-    """
     if sentence_classification:
         return batchify_sentence_classification_with_label(input_batch_list, gpu, device, if_train)
     else:
@@ -250,14 +212,6 @@ def batchify_with_label(input_batch_list, gpu, device, if_train=True, sentence_c
 
 
 def batchify_sequence_labeling_with_label(input_batch_list, gpu, device, if_train=True):
-    """
-
-    :param input_batch_list:
-    :param gpu:
-    :param device:
-    :param if_train:
-    :return:
-    """
     """
         ## to incoperate the transformer, the input add the original word text
         input: list of words, chars and labels, various length. [[word_ids, feature_ids, char_ids, label_ids, words, features, chars, labels],[word_ids, feature_ids, char_ids, label_ids, words, features, chars, labels],...]
@@ -341,14 +295,6 @@ def batchify_sequence_labeling_with_label(input_batch_list, gpu, device, if_trai
 
 def batchify_sentence_classification_with_label(input_batch_list, gpu, device, if_train=True):
     """
-
-    :param input_batch_list:
-    :param gpu:
-    :param device:
-    :param if_train:
-    :return:
-    """
-    """
         ## to incoperate the transformer, the input add the original word text
         input: list of words, chars and labels, various length. [[word_ids, feature_ids, char_ids, label_ids, words, features, chars, labels],[word_ids, feature_ids, char_ids, label_ids, words, features, chars, labels],...]
             word_ids: word ids for one sentence. (batch_size, sent_len)
@@ -427,14 +373,6 @@ def batchify_sentence_classification_with_label(input_batch_list, gpu, device, i
 
 
 def train(data, log, metric):
-    """
-
-    :param data:
-    :param log:
-    :param metric:
-    :return:
-    """
-
     logger = logger_config(log)
     logger.info("Training model...")
     save_data_name = data.dset_dir
@@ -452,7 +390,7 @@ def train(data, log, metric):
     else:
         model = SeqLabel(data)
     if data.optimizer.lower() == "sgd":
-        optimizer = optim.SGD(model.parameters(),lr=data.HP_lr, momentum=data.HP_momentum,weight_decay=data.HP_l2)
+        optimizer = optim.SGD(model.parameters(), lr=data.HP_lr, momentum=data.HP_momentum, weight_decay=data.HP_l2)
     elif data.optimizer.lower() == "adagrad":
         optimizer = optim.Adagrad(model.parameters(), lr=data.HP_lr, weight_decay=data.HP_l2)
     elif data.optimizer.lower() == "adadelta":
@@ -491,7 +429,9 @@ def train(data, log, metric):
         model.zero_grad()
         train_num = len(data.train_Ids)
         total_batch = train_num // batch_size + 1
-        logger.info("Current Learning Rate: %s " % (str(optimizer.state_dict()['param_groups'][0]['lr'])))
+        if data.optimizer.lower() == "sgd":
+            optimizer = lr_decay(optimizer, idx, data.HP_lr_decay, data.HP_lr)
+            logger.info("Current Learning Rate: %s " % (str(optimizer.state_dict()['param_groups'][0]['lr'])))
         for batch_id in range(total_batch):
             start = batch_id * batch_size
             end = (batch_id + 1) * batch_size
@@ -534,9 +474,8 @@ def train(data, log, metric):
             if data.HP_clip is not None:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), data.HP_clip)
             optimizer.step()
-            if scheduler != None:
+            if scheduler is not None:
                 scheduler.step()
-                
             model.zero_grad()
         epoch_finish = time.time()
         speed, acc, p, r, f, _, _ = evaluate(data, model, "dev")
@@ -546,16 +485,15 @@ def train(data, log, metric):
         if data.seg:
             current_score = [acc, f]
             logger.info("Dev: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f " % (
-                dev_cost, speed, acc, p, r, f))            
+                dev_cost, speed, acc, p, r, f))
             sys.stdout.flush()
         else:
             current_score = [acc, f]
-            logger.info("Dev: time: %.2fs speed: %.2fst/s; acc: %.4f; f: %.4f " % (dev_cost, speed, acc, f))               
+            logger.info("Dev: time: %.2fs speed: %.2fst/s; acc: %.4f; f: %.4f " % (dev_cost, speed, acc, f))
             sys.stdout.flush()
-            
-        
-        speed, acc, p, r, f,  _, _ = evaluate(data, model, "test")
- 
+
+        speed, acc, p, r, f, _, _ = evaluate(data, model, "test")
+
         test_finish = time.time()
         test_cost = test_finish - dev_finish
         test_current = [acc, f]
@@ -575,8 +513,8 @@ def train(data, log, metric):
                 test_cost, speed, acc, p, r, f))
             sys.stdout.flush()
         else:
-            logger.info("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f " % (
-                test_cost, speed, acc, p, r, f))
+            logger.info("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f" % (
+                test_cost, speed, acc))
             sys.stdout.flush()
     if metric.lower() == 'a':
         best_test_record = best_test[0].get("acc")
@@ -591,12 +529,7 @@ def train(data, log, metric):
 
 
 def load_model_decode(data, name):
-    """
 
-    :param data:
-    :param name:
-    :return:
-    """
     print("Load Model from file: " + str(data.model_dir))
     if data.sentence_classification:
         model = SentClassifier(data)
@@ -609,7 +542,7 @@ def load_model_decode(data, name):
 
     print("Decode %s data, nbest: %s ..." % (name, data.nbest))
     start_time = time.time()
-    speed, acc, p, r, f, pred_results, pred_scores= evaluate(data, model, name, data.nbest)
+    speed, acc, p, r, f, pred_results, pred_scores = evaluate(data, model, name, data.nbest)
     end_time = time.time()
     time_cost = end_time - start_time
     if data.seg:
@@ -619,12 +552,9 @@ def load_model_decode(data, name):
         print("%s: time:%.2fs, speed:%.2fst/s; acc: %.4f" % (name, time_cost, speed, acc))
     return speed, acc, p, r, f, pred_results, pred_scores
 
-def extract_attention_weight(data):
-    """
 
-    :param data:
-    :return:
-    """
+def extract_attention_weight(data):
+
     if data.sentence_classification:
         model = SentClassifier(data)
     if data.HP_gpu == True or data.HP_gpu == 'True':
@@ -647,16 +577,13 @@ def extract_attention_weight(data):
         if not instance:
             continue
         batch_word, batch_features, batch_wordlen, batch_wordrecover, batch_char, batch_charlen, batch_charrecover, batch_word_text, \
-        batch_label, mask = batchify_with_label(input_batch_list=instance, gpu=data.HP_gpu, device=data.device, if_train=True,\
+        batch_label, mask = batchify_with_label(input_batch_list=instance, gpu=data.HP_gpu, device=data.device,
+                                                if_train=True, \
                                                 sentence_classification=data.sentence_classification)
-        probs, weights = model.get_target_probability(batch_word, batch_features, batch_wordlen, batch_char, batch_charlen, \
-                                                      batch_charrecover,batch_word_text, None, mask)
+        probs, weights = model.get_target_probability(batch_word, batch_features, batch_wordlen, batch_char,
+                                                      batch_charlen, \
+                                                      batch_charrecover, batch_word_text, None, mask)
         probs_ls.append(probs)
         weights_ls.append(weights)
     return probs_ls, weights_ls
 
-
-
-
-if __name__ == '__main__':
-    run_ncrfpp(config='../test.config')
