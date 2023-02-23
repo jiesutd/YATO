@@ -460,7 +460,7 @@ def train(data, log, metric):
                 temp_start = temp_time
                 logger.info("     Instance: %s; Time: %.2fs; loss: %.4f; acc: %s/%s=%.4f" % (
                     end, temp_cost, sample_loss, right_token, whole_token, (right_token + 0.) / whole_token))
-                sys.stdout.flush()
+                #sys.stdout.flush()
                 sample_loss = 0
             elif end % 500 == 0 and data.sentence_classification:
                 temp_time = time.time()
@@ -468,7 +468,7 @@ def train(data, log, metric):
                 temp_start = temp_time
                 logger.info("     Instance: %s; Time: %.2fs; loss: %.4f;" % (
                     end, temp_cost, sample_loss))
-                sys.stdout.flush()
+                #sys.stdout.flush()
                 sample_loss = 0
             loss.backward()
             if data.HP_clip is not None:
@@ -486,11 +486,11 @@ def train(data, log, metric):
             current_score = [acc, f]
             logger.info("Dev: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f " % (
                 dev_cost, speed, acc, p, r, f))
-            sys.stdout.flush()
+            #sys.stdout.flush()
         else:
             current_score = [acc, f]
             logger.info("Dev: time: %.2fs speed: %.2fst/s; acc: %.4f; f: %.4f " % (dev_cost, speed, acc, f))
-            sys.stdout.flush()
+            #sys.stdout.flush()
 
         speed, acc, p, r, f, _, _ = evaluate(data, model, "test")
 
@@ -511,21 +511,21 @@ def train(data, log, metric):
         if data.seg:
             logger.info("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f " % (
                 test_cost, speed, acc, p, r, f))
-            sys.stdout.flush()
+            #sys.stdout.flush()
         else:
             logger.info("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f" % (
                 test_cost, speed, acc))
-            sys.stdout.flush()
+            #sys.stdout.flush()
     if metric.lower() == 'a':
         best_test_record = best_test[0].get("acc")
         logger.info('Best Test Accuracy: %s, Best Validation Accuracy: %s, Best Test Accuracy Epoch: %s ' % (
             str(best_test_record["best test"]), str(best_test_record["best dev"]), str(best_test_record["epoch num"])))
-        sys.stdout.flush()
+        #sys.stdout.flush()
     elif metric.lower() == 'f':
         best_test_record = best_test[1].get("f")
         logger.info('Best Test F1 Score: %s, Best Validation F1 Score: %s, Best Test F1 Score Epoch: %s ' % (
             str(best_test_record["best test"]), str(best_test_record["best dev"]), str(best_test_record["epoch num"])))
-        sys.stdout.flush()
+        #sys.stdout.flush()
 
 
 def load_model_decode(data, name):
