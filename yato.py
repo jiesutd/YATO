@@ -2,8 +2,10 @@
 from main import *
 from utils import *
 from model import *
+import argparse
 import re
 from seqeval.metrics import accuracy_score, classification_report
+
 
 class YATO:
     def __init__(self, config):
@@ -11,7 +13,6 @@ class YATO:
         self.config = config
         self.data = Data()
         self.data.read_config(self.config)
-        
 
     def set_config_from_dset(self, dset):
         self.data.load(dset)
@@ -63,7 +64,7 @@ class YATO:
         elif write_decode_file:
             self.data.write_decoded_results(pred_results, 'predict')
         return speed, acc, p, r, f, pred_results, pred_scores
-    
+
     def attention(self, input_text=None):
         self.data.read_config(self.config)
         dset = self.data.dset_dir
@@ -74,7 +75,7 @@ class YATO:
         probs_ls, weights_ls = extract_attention_weight(self.data)
         return probs_ls, weights_ls
 
-    def set_seed(self, seed=42, hard = False):
+    def set_seed(self, seed=42, hard=False):
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
@@ -82,11 +83,10 @@ class YATO:
         random.seed(seed)  # Python random module.
         torch.backends.cudnn.deterministic = True
         if hard:
-            torch.backends.cudnn.enabled = False 
+            torch.backends.cudnn.enabled = False
             torch.backends.cudnn.benchmark = False
             os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
             os.environ['PYTHONHASHSEED'] = str(seed)
-
 
     def convert_file_to_predict_style(self):
         predict_lines = open(self.data.raw_dir, 'r', encoding="utf8").readlines()
@@ -182,3 +182,23 @@ class YATO:
         """
         golden_list, predict_list = self.get_gold_predict(golden_standard, predict_result, split)
         print("Report accuracy: %0.2f" % accuracy_score(golden_list, predict_list))
+
+
+def parse_args():
+    description = "YATO: Yet Another deep learning based Text analysis Open toolkit"
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument("--status", type=str, default='train', help="model status")
+    parser.add_argument("--config", type=str, help="config file path")
+    parser.add_argument("--log", type=str, default="test.log", help="log name")
+    parser.add_argument("--metric", type=str, default="F", help="metric")
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    if args.status.lower() == 'train':
+        model = YATO(args.config)  # configuration file
+        model.train(log=args.log, metric=args.metric)
+    elif args.status.lower() == 'test':
+        model = YATO(args.config)  # configuration file
+        result_dict = decode_model.decode()
