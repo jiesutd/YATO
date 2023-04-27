@@ -237,7 +237,7 @@ If you want to report an issue or ask a problem, please attach the following mat
 
 ## Cite
 
-If you use **YATO++** in your paper, please cite our [paper]():
+If you use **YATO++** in your paper, please cite our [paper](https://arxiv.org/abs/2209.13877):
 
     @inproceedings{yang2022yato,
     title={YATO: Yet Another deep learning based Text analysis Open toolkit},
