@@ -16,10 +16,6 @@ import sys
 
 class WordRep(nn.Module):
     def __init__(self, data):
-        """
-
-        :param data:
-        """
         super(WordRep, self).__init__()
         if not data.silence:
             print("build word representation...")
@@ -94,12 +90,6 @@ class WordRep(nn.Module):
         self.drop = nn.Dropout(data.HP_dropout).to(self.device)
 
     def random_embedding(self, vocab_size, embedding_dim):
-        """
-
-        :param vocab_size:
-        :param embedding_dim:
-        :return:
-        """
         pretrain_emb = np.empty([vocab_size, embedding_dim])
         scale = np.sqrt(3.0 / embedding_dim)
         for index in range(vocab_size):
@@ -107,11 +97,6 @@ class WordRep(nn.Module):
         return pretrain_emb
 
     def forward(self, *input):
-        """
-
-        :param input:
-        :return:
-        """
         word_inputs, feature_inputs, word_seq_lengths, char_inputs, char_seq_lengths, char_seq_recover, batch_word_text = input[
                                                                                                                           :7]
         """

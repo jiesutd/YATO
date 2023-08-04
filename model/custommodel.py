@@ -3,32 +3,27 @@ import importlib
 
 
 class CustomModel():
-    def __init__(self, customCofig, customTokenizer, customModel):
-        """
+    def __init__(self, customConfig, customTokenizer, customModel):
 
-        :param customCofig:
-        :param customTokenizer:
-        :param customModel:
-        """
-        self.customCofig = customCofig
+        self.customConfig = customConfig
         self.customTokenizer = customTokenizer
         self.customModel = customModel
         self.configuration = None
 
     def get_bertmodel(self):
-        if self.customCofig is None or self.customCofig.lower() == 'none':
+        if self.customConfig is None or self.customConfig.lower() == 'none':
             self.configuration = BertConfig()
         else:
-            self.configuration = importlib.import_module(self.customCofig)
+            self.configuration = importlib.import_module(self.customConfig)
 
         model = BertModel(self.configuration)
         return model
 
     def bertmodel(self):
-        if self.customCofig is None or self.customCofig.lower() == 'none':
+        if self.customConfig is None or self.customConfig.lower() == 'none':
             self.configuration = BertConfig()
         else:
-            self.configuration = importlib.import_module(self.customCofig)
+            self.configuration = importlib.import_module(self.customConfig)
 
         model = BertModel(self.configuration)
         return model
@@ -38,10 +33,10 @@ class CustomModel():
         return tokenizer
 
     def albertmodel(self):
-        if self.customCofig is None or self.customCofig.lower() == 'none':
+        if self.customConfig is None or self.customConfig.lower() == 'none':
             self.configuration = AlbertConfig()
         else:
-            self.configuration = importlib.import_module(self.customCofig)
+            self.configuration = importlib.import_module(self.customConfig)
 
         model = AlbertModel(self.configuration)
         return model

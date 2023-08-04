@@ -18,10 +18,6 @@ import sys
 
 class WordSequence(nn.Module):
     def __init__(self, data):
-        """
-
-        :param data:
-        """
         super(WordSequence, self).__init__()
         if (not data.use_word_seq) and (data.high_level_transformer == None or data.high_level_transformer == "None"):
             print("ERROR: at least one of use_word and high_level_transformer should be valid")
@@ -139,12 +135,6 @@ class WordSequence(nn.Module):
 
 
     def random_embedding(self, vocab_size, embedding_dim):
-        """
-
-        :param vocab_size:
-        :param embedding_dim:
-        :return:
-        """
         pretrain_emb = np.empty([vocab_size, embedding_dim])
         scale = np.sqrt(3.0 / embedding_dim)
         for index in range(vocab_size):
@@ -217,11 +207,6 @@ class WordSequence(nn.Module):
         return feature_out, transformer_sequence_vector
 
     def forward(self, *input):
-        """
-
-        :param input:
-        :return:
-        """
         feature_out, transformer_sequence_vector = self.network_out_features(*input)
         feature_out = self.dropout(feature_out)
         ## feature_out (batch_size, seq_len, hidden_size)
@@ -229,11 +214,6 @@ class WordSequence(nn.Module):
         return outputs
 
     def sentence_representation(self, *input):
-        """
-
-        :param input:
-        :return:
-        """
         word_inputs, feature_inputs, word_seq_lengths, char_inputs, char_seq_lengths, char_seq_recover, batch_word_text, batch_label, mask = input[:9]
 
 

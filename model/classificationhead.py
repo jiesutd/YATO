@@ -5,7 +5,7 @@ from transformers.activations import get_activation
 class ClassificationHead(nn.Module):
     """Head for sentence-level classification tasks."""
 
-    def __init__(self, hidden_size,activation_function, num_labels, classifier_dropout, dropout_prob):
+    def __init__(self, hidden_size, activation_function, num_labels, classifier_dropout, dropout_prob):
         super().__init__()
         self.dense = nn.Linear(hidden_size, hidden_size)
         classifier_dropout = (

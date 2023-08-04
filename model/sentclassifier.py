@@ -15,10 +15,6 @@ from .classificationhead import ClassificationHead
 
 class SentClassifier(nn.Module):
     def __init__(self, data):
-        """
-
-        :param data:
-        """
         super(SentClassifier, self).__init__()
         if not data.silence:
             print("build sentence classification network...")
@@ -38,11 +34,6 @@ class SentClassifier(nn.Module):
                                              num_labels=data.label_alphabet_size, classifier_dropout=data.classifier_dropout,
                                              dropout_prob=data.HP_dropout).to(data.device)
     def calculate_loss(self, *input):
-        """
-
-        :param input:
-        :return:
-        """
         ## input = word_inputs, feature_inputs, word_seq_lengths, char_inputs, char_seq_lengths, char_seq_recover, batch_word_text, batch_label, mask
         outs, _ = self.word_hidden.sentence_representation(*input)
         
@@ -65,11 +56,6 @@ class SentClassifier(nn.Module):
 
 
     def forward(self, *input):
-        """
-
-        :param input:
-        :return:
-        """
         ## input = word_inputs, feature_inputs, word_seq_lengths, char_inputs, char_seq_lengths, char_seq_recover, batch_word_text, mask,...
         word_inputs = input[0]
         outs, _ = self.word_hidden.sentence_representation(*input)
@@ -81,11 +67,6 @@ class SentClassifier(nn.Module):
         return tag_seq
 
     def get_target_probability(self, *input):
-        """
-
-        :param input:
-        :return:
-        """
         # input = word_inputs, feature_inputs, word_seq_lengths, char_inputs, char_seq_lengths, char_seq_recover, batch_word_text, mask
         word_inputs = input[0]
         outs, weights = self.word_hidden.sentence_representation(*input)

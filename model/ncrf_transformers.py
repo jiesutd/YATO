@@ -8,21 +8,13 @@
 import torch
 import torch.nn as nn
 from transformers import AutoModel, AutoTokenizer
-from .customModel import CustomModel
+from .custommodel import CustomModel
 
 
 class NCRFTransformers(nn.Module):
     def __init__(self, model_name, device, customfig='none', customTokenizer='none', customModel='none',
                  fix_embeddings=False):
-        """
 
-        :param model_name:
-        :param device:
-        :param customfig:
-        :param customTokenizer:
-        :param customModel:
-        :param fix_embeddings:
-        """
         super(NCRFTransformers, self).__init__()
         print("Loading transformer... model:", model_name)
         self.device = device
@@ -39,7 +31,7 @@ class NCRFTransformers(nn.Module):
             print('!!' * 10)
             self.pretrained_weights = model_name
             self.customfig = customfig
-            self.CModel = CustomModel(customCofig=customfig, customTokenizer=customTokenizer, customModel=customModel)
+            self.CModel = CustomModel(customConfig=customfig, customTokenizer=customTokenizer, customModel=customModel)
             token_fun = getattr(self.CModel, customTokenizer.lower())
             self.tokenizer_class = token_fun(self.pretrained_weights)
             model_fun = getattr(self.CModel, customModel.lower())
@@ -56,12 +48,6 @@ class NCRFTransformers(nn.Module):
         print(self.model.config)
         print(" " + "++" * 20)
     def extract_features(self, input_batch_list, device):
-        """
-
-        :param input_batch_list:
-        :param device:
-        :return:
-        """
         ## extract word list and calculate max_word seq len, get rank order (word_perm_idx) to fit other network settings (e.g. LSTM)
         batch_size = len(input_batch_list)
         words = [sent for sent in input_batch_list]

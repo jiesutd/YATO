@@ -24,7 +24,6 @@ class Data:
         self.sentence_classification = False
         self.words2sent_representation = "Attention"
         self.MAX_SENTENCE_LENGTH = 512
-        self.MAX_WORD_LENGTH = -1
         self.number_normalized = False
         self.norm_word_emb = False
         self.norm_char_emb = False
@@ -178,7 +177,6 @@ class Data:
         print("     Tag          scheme: %s" % (self.tagScheme))
         print("     Split         token: %s" % (self.split_token))
         print("     MAX SENTENCE LENGTH: %s" % (self.MAX_SENTENCE_LENGTH))
-        print("     MAX   WORD   LENGTH: %s" % (self.MAX_WORD_LENGTH))
         print("     Number   normalized: %s" % (self.number_normalized))
         print("     Word         cutoff: %s" % (self.word_cutoff))
         print("     Train instance number: %s" % (len(self.train_texts)))
@@ -679,13 +677,9 @@ class Data:
         the_item = 'char_emb_dir'
         if the_item in config:
             self.char_emb_dir = config[the_item]
-
         the_item = 'MAX_SENTENCE_LENGTH'
         if the_item in config:
             self.MAX_SENTENCE_LENGTH = int(config[the_item])
-        the_item = 'MAX_WORD_LENGTH'
-        if the_item in config:
-            self.MAX_WORD_LENGTH = int(config[the_item])
 
         the_item = 'norm_word_emb'
         if the_item in config:

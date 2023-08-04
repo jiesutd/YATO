@@ -13,10 +13,6 @@ from .crf import CRF
 import sys
 class SeqLabel(nn.Module):
     def __init__(self, data):
-        """
-
-        :param data:
-        """
         super(SeqLabel, self).__init__()
         self.use_crf = data.use_crf
         if not data.silence:
@@ -42,11 +38,6 @@ class SeqLabel(nn.Module):
 
 
     def calculate_loss(self, *input):
-        """
-
-        :param input:
-        :return:
-        """
         word_inputs = input[0]
         batch_label = input[7]
         mask = input[8]
@@ -70,11 +61,6 @@ class SeqLabel(nn.Module):
 
 
     def forward(self, *input):
-        """
-
-        :param input:
-        :return:
-        """
         word_inputs = input[0]
         mask = input[8]
         outs = self.word_hidden(*input)
@@ -96,11 +82,6 @@ class SeqLabel(nn.Module):
 
 
     def decode_nbest(self, *input):
-        """
-
-        :param input:
-        :return:
-        """
         word_inputs, feature_inputs, word_seq_lengths, char_inputs, char_seq_lengths, char_seq_recover, batch_word_text, training, mask,  nbest = input[:10]
         if not self.use_crf:
             print("Nbest output is currently supported only for CRF! Exit...")

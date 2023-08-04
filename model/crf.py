@@ -16,12 +16,6 @@ STOP_TAG = -1
 # Compute log sum exp in a numerically stable way for the forward algorithm
 def log_sum_exp(vec, m_size):
     """
-
-    :param vec:
-    :param m_size:
-    :return:
-    """
-    """
     calculate log of exp sum
     args:
         vec (batch_size, vanishing_dim, hidden_dim) : input tensor
@@ -38,13 +32,6 @@ def log_sum_exp(vec, m_size):
 class CRF(nn.Module):
 
     def __init__(self, tagset_size, gpu, device, silence=False):
-        """
-
-        :param tagset_size:
-        :param gpu:
-        :param device:
-        :param silence:
-        """
         super(CRF, self).__init__()
         if not silence:
             print("build CRF...")
@@ -67,12 +54,6 @@ class CRF(nn.Module):
         # self.transitions.data.zero_()
 
     def _calculate_PZ(self, feats, mask):
-        """
-
-        :param feats:
-        :param mask:
-        :return:
-        """
         """
             input:
                 feats: (batch, seq_len, self.tag_size+2)
@@ -129,12 +110,6 @@ class CRF(nn.Module):
         return final_partition.sum(), scores
 
     def _viterbi_decode(self, feats, mask):
-        """
-
-        :param feats:
-        :param mask:
-        :return:
-        """
         """
             input:
                 feats: (batch, seq_len, self.tag_size+2)
@@ -238,13 +213,6 @@ class CRF(nn.Module):
 
     def _score_sentence(self, scores, mask, tags):
         """
-
-        :param scores:
-        :param mask:
-        :param tags:
-        :return:
-        """
-        """
             input:
                 scores: variable (seq_len, batch, tag_size, tag_size)
                 mask: (batch, seq_len)
@@ -296,13 +264,6 @@ class CRF(nn.Module):
         return gold_score
 
     def neg_log_likelihood_loss(self, feats, mask, tags):
-        """
-
-        :param feats:
-        :param mask:
-        :param tags:
-        :return:
-        """
         # nonegative log likelihood
         batch_size = feats.size(0)
         forward_score, scores = self._calculate_PZ(feats, mask)
@@ -312,13 +273,6 @@ class CRF(nn.Module):
         return forward_score - gold_score
 
     def _viterbi_decode_nbest(self, feats, mask, nbest):
-        """
-
-        :param feats:
-        :param mask:
-        :param nbest:
-        :return:
-        """
         """
             input:
                 feats: (batch, seq_len, self.tag_size+2)
