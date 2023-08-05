@@ -5,7 +5,6 @@
 # @Last Modified time: 2019-03-01 01:20:54
 
 from __future__ import print_function
-import numpy as np
 import os
 import time
 import sys
@@ -26,9 +25,6 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
-
-os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
 
 
 def logger_config(logging_file):
@@ -195,13 +191,14 @@ def evaluate(data, model, name, nbest=0):
     decode_time = time.time() - start_time
     speed = len(instances) / decode_time
 
+    mcc = None
     if data.sentence_classification:
-        acc, p, r, f = get_sent_fmeasure(gold_results, pred_results, list(set(data.sentence_tags)))
+        acc, p, r, f, mcc = get_sent_fmeasure(gold_results, pred_results, list(set(data.sentence_tags)))
     else:
         acc, p, r, f = get_ner_fmeasure(gold_results, pred_results, data.tagScheme)
     if nbest > 1 and not data.sentence_classification:
         return speed, acc, p, r, f, nbest_pred_results, pred_scores
-    return speed, float(acc), float(p), float(r), float(f), pred_results, pred_scores
+    return speed, float(acc), float(p), float(r), float(f), float(mcc), pred_results, pred_scores
 
 
 def batchify_with_label(input_batch_list, gpu, device, if_train=True, sentence_classification=False):
@@ -460,7 +457,7 @@ def train(data, log, metric):
                 temp_start = temp_time
                 logger.info("     Instance: %s; Time: %.2fs; loss: %.4f; acc: %s/%s=%.4f" % (
                     end, temp_cost, sample_loss, right_token, whole_token, (right_token + 0.) / whole_token))
-                #sys.stdout.flush()
+                # sys.stdout.flush()
                 sample_loss = 0
             elif end % 500 == 0 and data.sentence_classification:
                 temp_time = time.time()
@@ -468,7 +465,7 @@ def train(data, log, metric):
                 temp_start = temp_time
                 logger.info("     Instance: %s; Time: %.2fs; loss: %.4f;" % (
                     end, temp_cost, sample_loss))
-                #sys.stdout.flush()
+                # sys.stdout.flush()
                 sample_loss = 0
             loss.backward()
             if data.HP_clip is not None:
@@ -478,7 +475,7 @@ def train(data, log, metric):
                 scheduler.step()
             model.zero_grad()
         epoch_finish = time.time()
-        speed, acc, p, r, f, _, _ = evaluate(data, model, "dev")
+        speed, acc, p, r, f, mcc, _, _ = evaluate(data, model, "dev")
         dev_finish = time.time()
         dev_cost = dev_finish - epoch_finish
 
@@ -486,13 +483,14 @@ def train(data, log, metric):
             current_score = [acc, f]
             logger.info("Dev: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f " % (
                 dev_cost, speed, acc, p, r, f))
-            #sys.stdout.flush()
+            # sys.stdout.flush()
         else:
             current_score = [acc, f]
-            logger.info("Dev: time: %.2fs speed: %.2fst/s; acc: %.4f; f: %.4f " % (dev_cost, speed, acc, f))
-            #sys.stdout.flush()
+            logger.info(
+                "Dev: time: %.2fs speed: %.2fst/s; acc: %.4f; f: %.4f; mcc: %.4f " % (dev_cost, speed, acc, f, mcc))
+            # sys.stdout.flush()
 
-        speed, acc, p, r, f, _, _ = evaluate(data, model, "test")
+        speed, acc, p, r, f, mcc, _, _ = evaluate(data, model, "test")
 
         test_finish = time.time()
         test_cost = test_finish - dev_finish
@@ -511,25 +509,24 @@ def train(data, log, metric):
         if data.seg:
             logger.info("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f " % (
                 test_cost, speed, acc, p, r, f))
-            #sys.stdout.flush()
+            # sys.stdout.flush()
         else:
-            logger.info("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f" % (
-                test_cost, speed, acc))
-            #sys.stdout.flush()
+            logger.info("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f, mcc: %.4f " % (
+                test_cost, speed, acc, p, r, f, mcc))
+            # sys.stdout.flush()
     if metric.lower() == 'a':
         best_test_record = best_test[0].get("acc")
         logger.info('Best Test Accuracy: %s, Best Validation Accuracy: %s, Best Test Accuracy Epoch: %s ' % (
             str(best_test_record["best test"]), str(best_test_record["best dev"]), str(best_test_record["epoch num"])))
-        #sys.stdout.flush()
+        # sys.stdout.flush()
     elif metric.lower() == 'f':
         best_test_record = best_test[1].get("f")
         logger.info('Best Test F1 Score: %s, Best Validation F1 Score: %s, Best Test F1 Score Epoch: %s ' % (
             str(best_test_record["best test"]), str(best_test_record["best dev"]), str(best_test_record["epoch num"])))
-        #sys.stdout.flush()
+        # sys.stdout.flush()
 
 
 def load_model_decode(data, name):
-
     print("Load Model from file: " + str(data.model_dir))
     if data.sentence_classification:
         model = SentClassifier(data)
@@ -542,7 +539,7 @@ def load_model_decode(data, name):
 
     print("Decode %s data, nbest: %s ..." % (name, data.nbest))
     start_time = time.time()
-    speed, acc, p, r, f, pred_results, pred_scores = evaluate(data, model, name, data.nbest)
+    speed, acc, p, r, f, mcc, pred_results, pred_scores = evaluate(data, model, name, data.nbest)
     end_time = time.time()
     time_cost = end_time - start_time
     if data.seg:
@@ -554,7 +551,6 @@ def load_model_decode(data, name):
 
 
 def extract_attention_weight(data):
-
     if data.sentence_classification:
         model = SentClassifier(data)
     if data.HP_gpu == True or data.HP_gpu == 'True':
@@ -586,4 +582,3 @@ def extract_attention_weight(data):
         probs_ls.append(probs)
         weights_ls.append(weights)
     return probs_ls, weights_ls
-

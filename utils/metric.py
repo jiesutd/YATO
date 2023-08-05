@@ -8,6 +8,7 @@
 #
 from __future__ import print_function
 import sys
+
 from sklearn.metrics import precision_score, recall_score, f1_score, matthews_corrcoef
 
 
@@ -60,49 +61,32 @@ def get_ner_fmeasure(golden_lists, predict_lists, label_type="BMES"):
 
 
 ## input as sentence level labels
-def get_sent_fmeasure(gold_list, pred_list, target_label_ls=None):
-    """
-
-    :param gold_list:
-    :param pred_list:
-    :param target_label_ls:
-    :return:
-    """
+## input as sentence level labels
+def get_sent_fmeasure(gold_list, pred_list, target_label=None):
     sent_num = len(gold_list)
     agree_num = 0
+    temp_label2id = {}
+    temp_gold_list = []
+    temp_pred_list = []
+    for label in target_label:
+        temp_label2id[label] = target_label.index(label)
     for gold, pred in zip(gold_list, pred_list):
         if gold == pred:
             agree_num += 1
-    accuracy = (agree_num+0.)/sent_num
-    agree_target_num = 0
-    pred_target_num = 0
-    gold_target_num = 0
-    for target_label in target_label_ls:
-        target_label = str(target_label)
-        for gold, pred in zip(gold_list, pred_list):
-            gold = str(gold)
-            pred = str(pred)
-            if gold == target_label:
-                gold_target_num += 1
-            if pred == target_label:
-                pred_target_num += 1
-            if gold == target_label and pred == target_label:
-                agree_target_num += 1
+        temp_gold_list.append(temp_label2id[gold])
+        temp_pred_list.append(temp_label2id[pred])
+    if len(target_label) == 2:
+        precision = precision_score(temp_gold_list, temp_pred_list)
+        recall = recall_score(temp_gold_list, temp_pred_list)
+        f_measure = f1_score(temp_gold_list, temp_pred_list)
+    elif len(target_label) > 2:
+        precision = precision_score(temp_gold_list, temp_pred_list, average='macro')
+        recall = recall_score(temp_gold_list, temp_pred_list, average='macro')
+        f_measure = f1_score(temp_gold_list, temp_pred_list, average='macro')
+    accuracy = (agree_num + 0.) / sent_num
+    mcc = matthews_corrcoef(temp_gold_list, temp_pred_list)
 
-    if pred_target_num == 0:
-        precision = 0
-    else:
-        precision = (agree_target_num+0.)/pred_target_num
-    if gold_target_num == 0:
-        recall = 0
-    else:
-        recall = (agree_target_num+0.)/gold_target_num
-    if (precision == -1) or (recall == -1) or (precision+recall) <= 0.:
-        f_measure = 0
-    else:
-        f_measure = 2*precision*recall/(precision+recall)
-
-    return accuracy, precision, recall, f_measure
+    return accuracy, precision, recall, f_measure, mcc
 
 
 def reverse_style(input_string):
