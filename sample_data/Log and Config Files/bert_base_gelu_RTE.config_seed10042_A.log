@@ -1,0 +1,14 @@
+2023-08-05 23:54:23,571 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO - Training model...
+2023-08-05 23:57:31,689 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO -      Instance: 2000; Time: 25.18s; loss: 90.5573;
+2023-08-05 23:57:39,378 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO - Dev: time: 1.89s speed: 147.45st/s; acc: 0.5776; f: 0.7097; mcc: 0.2107 
+2023-08-05 23:57:41,274 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO - Save current best acc model in file:/data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/acc0.5776_p0.5564_r0.9795_f0.7097.pth
+2023-08-05 23:57:42,216 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO - Save current best f model in file:/data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/acc0.5776_p0.5564_r0.9795_f0.7097.pth
+2023-08-05 23:57:42,219 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO - Test: time: 1.90s, speed: 146.71st/s; acc: 0.5776, p: 0.5564, r: 0.9795, f: 0.7097, mcc: 0.2107 
+2023-08-05 23:58:05,520 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO -      Instance: 2000; Time: 23.30s; loss: 77.3334;
+2023-08-05 23:58:12,959 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO - Dev: time: 1.87s speed: 148.63st/s; acc: 0.6390; f: 0.6774; mcc: 0.2731 
+2023-08-05 23:58:14,849 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO - Save current best acc model in file:/data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/acc0.6390_p0.6402_r0.7192_f0.6774.pth
+2023-08-05 23:58:15,785 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO - Test: time: 1.89s, speed: 147.11st/s; acc: 0.6390, p: 0.6402, r: 0.7192, f: 0.6774, mcc: 0.2731 
+2023-08-05 23:58:39,954 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO -      Instance: 2000; Time: 24.17s; loss: 59.8379;
+2023-08-05 23:58:47,506 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO - Dev: time: 1.87s speed: 148.92st/s; acc: 0.6390; f: 0.6894; mcc: 0.2739 
+2023-08-05 23:58:49,395 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO - Test: time: 1.89s, speed: 147.19st/s; acc: 0.6390, p: 0.6307, r: 0.7603, f: 0.6894, mcc: 0.2739 
+2023-08-05 23:58:49,396 - /data/zqwang/Github-YATO/YATO-main/YATO-EXPERMENTS/bert_base_gelu_RTE.config_seed10042_A - INFO - Best Test Accuracy: 0.6389891696750902, Best Validation Accuracy: 0.6389891696750902, Best Test Accuracy Epoch: 1 
