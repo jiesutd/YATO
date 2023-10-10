@@ -66,10 +66,7 @@ def read_instance(input_file, word_alphabet, char_alphabet, feature_alphabets, l
                   char_padding_size=-1,
                   char_padding_symbol='</pad>'):
     feature_num = len(feature_alphabets)
-    if predict_line is None:
-        in_lines = open(input_file, 'r', encoding="utf8").readlines()
-    else:
-        in_lines = predict_line
+
     instence_texts = []
     instence_Ids = []
     words = []
@@ -80,6 +77,11 @@ def read_instance(input_file, word_alphabet, char_alphabet, feature_alphabets, l
     feature_Ids = []
     char_Ids = []
     label_Ids = []
+
+    if predict_line is None:
+        in_lines = open(input_file, 'r', encoding="utf8").readlines()
+    else:
+        in_lines = predict_line
 
     ## if sentence classification data format, splited by split token
     if sentence_classification:
