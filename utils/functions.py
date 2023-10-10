@@ -72,9 +72,13 @@ def read_instance(input_file, word_alphabet, char_alphabet, feature_alphabets, l
         in_lines = predict_line
     instence_texts = []
     instence_Ids = []
+    words = []
     features = []
+    chars = []
     labels = []
+    word_Ids = []
     feature_Ids = []
+    char_Ids = []
     label_Ids = []
 
     ## if sentence classification data format, splited by split token
