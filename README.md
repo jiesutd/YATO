@@ -36,7 +36,7 @@ Compared with ****NCRF++****, the highlight of **YATO** is the support for Pre-t
 
 Welcome to star this repository!
 
-![alt text](./readme/YATO.png "YATO")
+![alt text](./readme/framework.jpg "YATO")
 
 
 ## Getting Started
