@@ -198,7 +198,7 @@ def evaluate(data, model, name, nbest=0):
         acc, p, r, f = get_ner_fmeasure(gold_results, pred_results, data.tagScheme)
     if nbest > 1 and not data.sentence_classification:
         return speed, acc, p, r, f, nbest_pred_results, pred_scores
-    return speed, float(acc), float(p), float(r), float(f), float(mcc), pred_results, pred_scores
+    return speed, float(acc), float(p), float(r), float(f), pred_results, pred_scores
 
 
 def batchify_with_label(input_batch_list, gpu, device, if_train=True, sentence_classification=False):
@@ -475,7 +475,7 @@ def train(data, log, metric):
                 scheduler.step()
             model.zero_grad()
         epoch_finish = time.time()
-        speed, acc, p, r, f, mcc, _, _ = evaluate(data, model, "dev")
+        speed, acc, p, r, f, _, _ = evaluate(data, model, "dev")
         dev_finish = time.time()
         dev_cost = dev_finish - epoch_finish
 
@@ -487,10 +487,10 @@ def train(data, log, metric):
         else:
             current_score = [acc, f]
             logger.info(
-                "Dev: time: %.2fs speed: %.2fst/s; acc: %.4f; f: %.4f; mcc: %.4f " % (dev_cost, speed, acc, f, mcc))
+                "Dev: time: %.2fs speed: %.2fst/s; acc: %.4f; f: %.4f;" % (dev_cost, speed, acc, f))
             # sys.stdout.flush()
 
-        speed, acc, p, r, f, mcc, _, _ = evaluate(data, model, "test")
+        speed, acc, p, r, f, _, _ = evaluate(data, model, "test")
 
         test_finish = time.time()
         test_cost = test_finish - dev_finish
@@ -511,8 +511,8 @@ def train(data, log, metric):
                 test_cost, speed, acc, p, r, f))
             # sys.stdout.flush()
         else:
-            logger.info("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f, mcc: %.4f " % (
-                test_cost, speed, acc, p, r, f, mcc))
+            logger.info("Test: time: %.2fs, speed: %.2fst/s; acc: %.4f, p: %.4f, r: %.4f, f: %.4f" % (
+                test_cost, speed, acc, p, r, f))
             # sys.stdout.flush()
     if metric.lower() == 'a':
         best_test_record = best_test[0].get("acc")
@@ -539,7 +539,7 @@ def load_model_decode(data, name):
 
     print("Decode %s data, nbest: %s ..." % (name, data.nbest))
     start_time = time.time()
-    speed, acc, p, r, f, mcc, pred_results, pred_scores = evaluate(data, model, name, data.nbest)
+    speed, acc, p, r, f, pred_results, pred_scores = evaluate(data, model, name, data.nbest)
     end_time = time.time()
     time_cost = end_time - start_time
     if data.seg:
